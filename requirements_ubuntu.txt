@@ -2,3 +2,4 @@ toga
 mockito
 toga-chart
 briefcase
+PyGObject==3.50.0
