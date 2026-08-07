@@ -1,4 +1,4 @@
 toga
 mockito
-toga-chart
+matplotlib
 briefcase

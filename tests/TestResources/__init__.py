@@ -1,6 +1,5 @@
 import pathlib
 
-
 path_short_transcript = (
     pathlib.Path(__file__).parent / "test_short_transcript/transcription_timestamps.txt"
 )

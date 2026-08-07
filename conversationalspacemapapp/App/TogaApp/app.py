@@ -1,11 +1,15 @@
-import toga
-import toga_chart
-from toga.style import Pack
-from toga.constants import COLUMN
-
+import asyncio
+import io
 import pathlib
 import platform
+import traceback
 from typing import Callable
+
+import toga
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.figure import Figure
+from toga.constants import COLUMN
+from toga.style import Pack
 
 import conversationalspacemapapp.Types.Data as Data
 import conversationalspacemapapp.Plotter.PlotMap as PlotMap
@@ -17,8 +21,16 @@ import conversationalspacemapapp.Plotter.StylePicker as StylePicker
 class ConversationalSpaceMapAppToga(AbstractApp.AbstractApp, toga.App):
     default_padding = 5
     default_flex = 1
+    default_chart_width = 500
+    default_chart_height = 400
 
     def __init__(self, name, app_id):
+        self._chart_image_action = None
+        self._chart_width = self.default_chart_width
+        self._chart_height = self.default_chart_height
+        self._pending_plot = None
+        self._plot_generation = 0
+        self._plot_task = None
         super(ConversationalSpaceMapAppToga, self).__init__(
             formal_name=name, app_id=app_id
         )
@@ -202,7 +214,10 @@ class ConversationalSpaceMapAppToga(AbstractApp.AbstractApp, toga.App):
         self.label.refresh()
 
     def _create_chart(self):
-        self.chart = toga_chart.Chart(style=Pack(flex=1), on_draw=self.draw_chart)
+        self.chart = toga.Canvas(
+            style=Pack(flex=1),
+            on_resize=self._resize_chart,
+        )
         self._set_widget_style(self.chart)
         return self.chart
 
@@ -284,26 +299,85 @@ class ConversationalSpaceMapAppToga(AbstractApp.AbstractApp, toga.App):
             index.style.background_color.b,
         )
 
-    def draw_chart(self, chart: toga_chart.Chart, figure, *args, **kwargs):
-        if self.has_parser:
-            self.map = PlotMap.MapBarPlot(fig=figure)
-            self.map.plot(
-                options=Data.PlotOptions(
-                    app=self,
-                    title=self.plot_title_input.value,
-                    show_title=self.plot_title.value,
-                    labels=self.plot_labels.value,
-                    interviewer_label=self.interviewer_label_input.value,
-                    interviewee_label=self.interviewee_label_input.value,
-                    yaxis=self.plot_yaxis.value,
-                    xaxis=self.plot_xaxis.value,
-                    legend=self.plot_legend.value,
-                    grid=self.plot_grid.value,
-                ),
-            )
-            figure.tight_layout()
-        else:
+    @staticmethod
+    def draw_chart(options: Data.PlotOptions, width: int, height: int):
+        """Build and rasterize a plot without touching Toga widgets."""
+        dpi = 100
+        figure = Figure(figsize=(width / dpi, height / dpi), dpi=dpi)
+        canvas = FigureCanvasAgg(figure)
+        plot = PlotMap.MapBarPlot(fig=figure)
+        plot.plot(options=options)
+        figure.tight_layout()
+
+        image = io.BytesIO()
+        canvas.print_png(image)
+        return plot, image.getvalue()
+
+    def _resize_chart(self, widget: toga.Canvas, width, height, **kwargs):
+        width = round(width)
+        height = round(height)
+        if width < 1 or height < 1:
             return
+        if width == self._chart_width and height == self._chart_height:
+            return
+
+        self._chart_width = width
+        self._chart_height = height
+        if self._chart_image_action is not None:
+            self._chart_image_action.width = width
+            self._chart_image_action.height = height
+            widget.redraw()
+
+        if self.has_parser:
+            self._update_plot()
+
+    def _set_chart_image(self, image_data: bytes, width: int, height: int):
+        image = toga.Image(image_data)
+        if self._chart_image_action is None:
+            self._chart_image_action = self.chart.draw_image(
+                image,
+                x=0,
+                y=0,
+                width=width,
+                height=height,
+            )
+        else:
+            self._chart_image_action.image = image
+            self._chart_image_action.width = width
+            self._chart_image_action.height = height
+            self.chart.redraw()
+
+    async def _render_pending_plots(self):
+        while self._pending_plot is not None:
+            generation, options, width, height = self._pending_plot
+            self._pending_plot = None
+            try:
+                plot, image_data = await asyncio.to_thread(
+                    self.draw_chart,
+                    options,
+                    width,
+                    height,
+                )
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                if generation == self._plot_generation:
+                    traceback.print_exc()
+                    self.save.enabled = self.map is not None
+                continue
+
+            if generation != self._plot_generation:
+                continue
+
+            try:
+                self._set_chart_image(image_data, width, height)
+            except Exception:
+                traceback.print_exc()
+                self.save.enabled = self.map is not None
+                continue
+
+            self.map = plot
+            self.save.enabled = True
 
     def _button_factory(
         self,
@@ -325,7 +399,7 @@ class ConversationalSpaceMapAppToga(AbstractApp.AbstractApp, toga.App):
 
     @staticmethod
     def _set_default_widget_padding(widget: toga.Widget) -> toga.Widget:
-        widget.style.padding = ConversationalSpaceMapAppToga.default_padding
+        widget.style.margin = ConversationalSpaceMapAppToga.default_padding
         return widget
 
     @staticmethod
@@ -371,8 +445,31 @@ class ConversationalSpaceMapAppToga(AbstractApp.AbstractApp, toga.App):
         self.plot_title_input.value = "Conversational Space Map " + str(self.path.stem)
 
     def _update_plot(self):
-        self.chart.redraw()
-        self.save.enabled = True
+        if not self.has_parser:
+            return
+
+        options = Data.PlotOptions(
+            app=self,
+            title=self.plot_title_input.value,
+            show_title=self.plot_title.value,
+            labels=self.plot_labels.value,
+            interviewer_label=self.interviewer_label_input.value,
+            interviewee_label=self.interviewee_label_input.value,
+            yaxis=self.plot_yaxis.value,
+            xaxis=self.plot_xaxis.value,
+            legend=self.plot_legend.value,
+            grid=self.plot_grid.value,
+        )
+        self._plot_generation += 1
+        self._pending_plot = (
+            self._plot_generation,
+            options,
+            self._chart_width,
+            self._chart_height,
+        )
+        self.save.enabled = False
+        if self._plot_task is None or self._plot_task.done():
+            self._plot_task = self.loop.create_task(self._render_pending_plots())
 
     def _is_new_history_path(self) -> bool:
         if self.path in self._get_file_history():

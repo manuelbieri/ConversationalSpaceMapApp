@@ -1,4 +1,5 @@
-import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 import conversationalspacemapapp.Types.Data as Data
 
@@ -6,13 +7,18 @@ import conversationalspacemapapp.Types.Data as Data
 class MapBarPlot:
     def __init__(
         self,
-        fig: plt.figure,
+        fig: Figure,
+        ax: Axes = None,
     ):
         self.fig = fig
-        self.ax = self.fig.gca()
+        if ax is None:
+            self.ax = self.fig.gca()
+        else:
+            self.ax = ax
+        self.ax.clear()
 
     def plot(self, options: Data.PlotOptions):
-        xlim_num = 0
+        xlim_num = max(abs(utterance.words) for utterance in options.map) * 1.1
         for utterance in options.map:
             self.ax.barh(
                 utterance.number,
@@ -23,7 +29,6 @@ class MapBarPlot:
                 color=options.get_participant_color(utterance.speaker),
                 label=options.get_participant_label(utterance.speaker),
             )
-            xlim_num = max([abs(utterance.words) for utterance in options.map]) * 1.1
         index = [*range(1, len(options.map) + 1)]
 
         # Set x-axis
@@ -65,9 +70,9 @@ class MapBarPlot:
             )
         if options.legend:
             self.ax.legend(loc="upper left")
-            self.remove_duplicate_labels_legend()
+            self._remove_duplicate_labels_legend()
 
-    def remove_duplicate_labels_legend(self):
+    def _remove_duplicate_labels_legend(self):
         handles, labels = self.ax.get_legend_handles_labels()
         unique = [
             (h, l)

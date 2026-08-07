@@ -11,8 +11,8 @@ exclude = [
 name = "ConversationalSpaceMapApp"
 version = "0.1.2" # RELEASE
 dependencies = [  # RELEASE
-  "toga-chart",
-  "toga",
+  "matplotlib>=3.9,<4",
+  "toga>=0.5.4,<0.6",
   "mockito",
 ]
 requires-python = ">= 3.12"
@@ -70,7 +70,7 @@ test_sources = [
 ]
 
 requires = [
-   "toga-chart",
+   "matplotlib>=3.9,<4",
 ]
 test_requires = [
     "mockito",
@@ -79,13 +79,13 @@ test_requires = [
 [tool.briefcase.app.conversationalspacemapapp.macOS]
 universal_build = true
 requires = [
-    "toga-cocoa~=0.4.8",
+    "toga-cocoa~=0.5.4",
     "std-nslog~=1.0.0",
 ]
 
 [tool.briefcase.app.conversationalspacemapapp.linux]
 requires = [
-    "toga-gtk~=0.4.8",
+    "toga-gtk~=0.5.4",
 ]
 
 [tool.briefcase.app.conversationalspacemapapp.linux.system.debian]
@@ -200,19 +200,19 @@ flatpak_sdk = "org.gnome.Sdk"
 
 [tool.briefcase.app.conversationalspacemapapp.windows]
 requires = [
-    "toga-winforms~=0.4.8",
+    "toga-winforms~=0.5.4",
 ]
 
 # Mobile deployments
 [tool.briefcase.app.conversationalspacemapapp.iOS]
 requires = [
-    "toga-iOS~=0.4.8",
+    "toga-iOS~=0.5.4",
     "std-nslog~=1.0.0",
 ]
 
 [tool.briefcase.app.conversationalspacemapapp.android]
 requires = [
-    "toga-android~=0.4.8",
+    "toga-android~=0.5.4",
 ]
 
 base_theme = "Theme.MaterialComponents.Light.DarkActionBar"
@@ -228,7 +228,6 @@ build_gradle_dependencies = [
 # Web deployments
 [tool.briefcase.app.conversationalspacemapapp.web]
 requires = [
-    "toga-web~=0.4.8",
+    "toga-web~=0.5.4",
 ]
 style_framework = "Shoelace v2.3"
-

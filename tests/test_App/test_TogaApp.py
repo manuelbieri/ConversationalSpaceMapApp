@@ -21,7 +21,11 @@ class TestTogaApp(unittest.TestCase):
 
     def test_plot(self):
         TestTogaApp.sut._set_path(path=TestResources.path_multiple_speaker_transcript)
+        TestTogaApp.sut.loop.run_until_complete(TestTogaApp.sut._plot_task)
+        self.assertIsNotNone(TestTogaApp.sut._chart_image_action)
+        self.assertIsNotNone(TestTogaApp.sut.map)
 
     def test_change_color_palette(self):
         TestTogaApp.sut._set_path(path=TestResources.path_multiple_speaker_transcript)
         TestTogaApp.sut.color_palette.value = StylePicker.Palette.Pastel
+        TestTogaApp.sut.loop.run_until_complete(TestTogaApp.sut._plot_task)

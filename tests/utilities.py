@@ -7,7 +7,6 @@ import conversationalspacemapapp.App.AbstractApp as AbstractApp
 import conversationalspacemapapp.Plotter.StylePicker as StylePicker
 import conversationalspacemapapp.Parser.AbstractParser as AbstractParser
 
-
 speaker00_name = "SPEAKER_00"
 speaker00_label = "Label_00"
 speaker00_type = Constants.Participant.Interviewer
