@@ -2,3 +2,4 @@ toga
 mockito
 matplotlib
 briefcase
+PyGObject==3.50.0
