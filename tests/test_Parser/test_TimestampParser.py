@@ -51,6 +51,21 @@ class TestTimestampParser(unittest.TestCase):
         parser = TestTimestampParser.setUpParser()
         self.assertEqual(parser.map_list, [-15, 4])
 
+    def test_transcript_timestamp_message_short(self):
+        parser = TestTimestampParser.setUpParser()
+        utterance1, utterance2 = parser.map
+
+        self.assertEqual(
+            utterance1.text,
+            "Ich habe noch nie so ein schlechtes Interview gesehen. "
+            "Red jetzt nicht so klar, Mona.",
+        )
+        self.assertEqual(utterance1.start_time, "00:00:01")
+        self.assertEqual(utterance1.end_time, "00:00:12")
+        self.assertEqual(utterance2.text, "Jetzt noch etwas nuscheln.")
+        self.assertEqual(utterance2.start_time, "00:00:22")
+        self.assertEqual(utterance2.end_time, "00:00:22")
+
     def test_transcript_timestamp_map_long(self):
         parser = TestTimestampParser.setUpParser(short=False)
         sut: [Data.Utterance] = parser.map
@@ -92,3 +107,15 @@ class TestTimestampParser(unittest.TestCase):
         self.assertEqual(
             parser.participants, ["SPEAKER_00", "SPEAKER_01", "SPEAKER_02"]
         )
+
+    def test_transcript_timestamp_message_multiple_speakers(self):
+        parser = TestTimestampParser.setUpParser(multiple_speaker=True)
+        utterance1, utterance2, utterance3 = parser.map
+
+        self.assertEqual(utterance1.start_time, "00:00:01")
+        self.assertEqual(utterance1.end_time, "00:00:12")
+        self.assertEqual(utterance2.start_time, "00:00:15")
+        self.assertEqual(utterance2.end_time, "00:00:24")
+        self.assertEqual(utterance3.text, "Deine Mutter.")
+        self.assertEqual(utterance3.start_time, "00:00:27")
+        self.assertEqual(utterance3.end_time, "00:00:27")

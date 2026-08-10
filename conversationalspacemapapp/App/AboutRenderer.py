@@ -1,11 +1,62 @@
-<!doctype html>
+import base64
+from pathlib import Path
+
+
+class AboutRenderer:
+    """Renders the local About page shown in a Toga WebView."""
+
+    def __init__(self, *, icon_path: Path | None = None) -> None:
+        self.icon_path = icon_path or Path(__file__).parent / "assets" / "CSM_icon.png"
+
+    def render(self) -> str:
+        return self._document(
+            document_class="app",
+            icon_markup=self._icon_markup(),
+            security_policy=(
+                '<meta http-equiv="Content-Security-Policy" '
+                "content=\"default-src 'none'; style-src 'unsafe-inline'; "
+                'img-src data:">'
+            ),
+        )
+
+    def render_docs(self) -> str:
+        """Render the static GitHub Pages variant of the About page."""
+        return self._document(
+            document_class="docs",
+            icon_markup=(
+                '<img class="intro-icon" src="images/CSM_icon.png" '
+                'alt="Conversational Space Map illustration">'
+            ),
+            security_policy="",
+        )
+
+    def _icon_markup(self) -> str:
+        try:
+            icon = self.icon_path.read_bytes()
+        except OSError:
+            return ""
+        encoded = base64.b64encode(icon).decode("ascii")
+        return (
+            '<img class="intro-icon" '
+            f'src="data:image/png;base64,{encoded}" '
+            'alt="Conversational Space Map illustration">'
+        )
+
+    @staticmethod
+    def _document(
+        *,
+        document_class: str,
+        icon_markup: str,
+        security_policy: str,
+    ) -> str:
+        document = """<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Create and interpret conversational space maps from timestamped interview transcripts.">
     <title>Conversational Space Map</title>
-
+    __SECURITY_POLICY__
     <style>
         :root {
             color-scheme: light dark;
@@ -93,11 +144,11 @@
         }
     </style>
 </head>
-<body class="docs">
+<body class="__DOCUMENT_CLASS__">
     <main>
         <section>
             <div class="intro">
-                <img class="intro-icon" src="images/CSM_icon.png" alt="Conversational Space Map illustration">
+                __ICON_MARKUP__
                 <div>
                     <h1>Conversational Space Map</h1>
                     <p>
@@ -186,3 +237,9 @@ SOFTWARE.</pre>
     </main>
 </body>
 </html>
+"""
+        return (
+            document.replace("__DOCUMENT_CLASS__", document_class)
+            .replace("__ICON_MARKUP__", icon_markup)
+            .replace("    __SECURITY_POLICY__", security_policy)
+        )

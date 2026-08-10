@@ -1,5 +1,4 @@
 toga
-mockito
-matplotlib
+toga-chart
 briefcase
 PyGObject==3.50.0

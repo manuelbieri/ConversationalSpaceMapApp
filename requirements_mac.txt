@@ -1,4 +1,3 @@
 toga
-mockito
-matplotlib
+toga-chart
 briefcase

@@ -30,4 +30,4 @@ jobs:
 
     - name: Generate Report
       run: |
-        xvfb-run python -m unittest discover tests "test_*.py"
+        xvfb-run python -m unittest discover -s tests -t . -v

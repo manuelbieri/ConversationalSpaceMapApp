@@ -1,32 +1,37 @@
 import unittest
 
-import utilities
+from tests import utilities
 
-import conversationalspacemapapp.Types.Data as Data
-import conversationalspacemapapp.App.AbstractApp as AbstractApp
-import conversationalspacemapapp.Parser.TimestampParser as TranscriptParser
+from conversationalspacemapapp.Types import Constants, Data
 
 
 class TestPlotOptions(unittest.TestCase):
-    parser: TranscriptParser.AbstractParser
-    app: AbstractApp.AbstractApp
+    def test_plot_options_are_ui_independent(self):
+        options = utilities.get_plot_options(title="Interview")
 
-    def setUp(self):
-        TestPlotOptions.parser = utilities.get_parser_mock()
-        TestPlotOptions.app = utilities.get_app_mock(parser=TestPlotOptions.parser)
-
-    def test_plot_options_setup(self):
-        sut = Data.PlotOptions(
-            app=TestPlotOptions.app,
+        self.assertEqual(options.title, "Interview")
+        self.assertEqual(options.map[0].speaker, utilities.speaker00_name)
+        self.assertEqual(
+            options.get_participant_color(utilities.speaker00_name),
+            utilities.speaker00_color,
         )
-        speaker00 = sut.participants[0]
-        speaker01 = sut.participants[1]
-        self.assertEqual(2, len(sut.participants))
-        self.assertEqual(utilities.speaker00_name, speaker00.name)
-        self.assertEqual(utilities.speaker00_label, speaker00.label)
-        self.assertEqual(utilities.speaker00_color, speaker00.color)
-        self.assertEqual(utilities.speaker00_type, speaker00.type)
-        self.assertEqual(utilities.speaker01_name, speaker01.name)
-        self.assertEqual(utilities.speaker01_label, speaker01.label)
-        self.assertEqual(utilities.speaker01_color, speaker01.color)
-        self.assertEqual(utilities.speaker01_type, speaker01.type)
+        self.assertEqual(
+            options.get_participant_label(utilities.speaker01_name),
+            utilities.speaker01_label,
+        )
+        self.assertEqual(
+            options.get_participant_type(utilities.speaker00_name),
+            Constants.Participant.Interviewer,
+        )
+
+    def test_unknown_participant_raises_clear_error(self):
+        with self.assertRaisesRegex(KeyError, "Unknown participant: missing"):
+            utilities.get_plot_options().get_participant_type("missing")
+
+    def test_utterances_sort_by_number(self):
+        utterances = [
+            Data.Utterance(2, "B", 2),
+            Data.Utterance(1, "A", 1),
+        ]
+
+        self.assertEqual([item.number for item in sorted(utterances)], [1, 2])

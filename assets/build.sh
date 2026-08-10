@@ -1,14 +1,15 @@
-printf 'Change folder...'
-cd ..
+#!/usr/bin/env bash
 
-printf 'Update assets...'
-briefcase update --update-resources
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-printf 'Create build template...'
+printf 'Create build template...\n'
 briefcase create
 
-printf 'Build...'
+printf 'Update assets...\n'
+briefcase update --update-resources
+
+printf 'Build...\n'
 briefcase build
 
-printf 'Run...'
+printf 'Run...\n'
 briefcase run

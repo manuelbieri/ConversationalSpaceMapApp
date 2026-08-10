@@ -1,9 +1,10 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from collections.abc import Sequence
 
 import conversationalspacemapapp.Types.Constants as Constants
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class ParticipantOptions:
     name: str
     type: Constants.Participant
@@ -11,39 +12,27 @@ class ParticipantOptions:
     color: str
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class PlotOptions:
-    def __init__(
-        self,
-        app,
-        title="Conversational Map Space",
-        show_title=True,
-        labels=True,
-        interviewer_label="Interviewer",
-        interviewee_label="Interviewee",
-        yaxis=True,
-        xaxis=True,
-        grid=True,
-        legend=True,
-    ):
-        assert app.has_parser
-        self.map = app.parser.map
-        self.participants: list[ParticipantOptions] = self._get_participants(app)
+    """Complete, UI-independent input for a conversational-space plot."""
 
-        self.title = title
-        self.show_title = show_title
-        self.labels = labels
-        self.interviewer_label = interviewer_label
-        self.interviewee_label = interviewee_label
-        self.yaxis = yaxis
-        self.xaxis = xaxis
-        self.grid = grid
-        self.legend = legend
+    map: Sequence["Utterance"] = field(default_factory=tuple)
+    participants: Sequence[ParticipantOptions] = field(default_factory=tuple)
+    title: str = "Conversational Map Space"
+    show_title: bool = True
+    labels: bool = True
+    interviewer_label: str = "Interviewer"
+    interviewee_label: str = "Interviewee"
+    yaxis: bool = True
+    xaxis: bool = True
+    grid: bool = True
+    legend: bool = True
 
-    def _get_participant(self, participant_name: str):
+    def _get_participant(self, participant_name: str) -> ParticipantOptions:
         for participant in self.participants:
             if participant.name == participant_name:
                 return participant
+        raise KeyError(f"Unknown participant: {participant_name}")
 
     def get_participant_color(self, participant_name: str) -> str:
         return self._get_participant(participant_name).color
@@ -54,27 +43,15 @@ class PlotOptions:
     def get_participant_type(self, participant_name: str) -> Constants.Participant:
         return self._get_participant(participant_name).type
 
-    @staticmethod
-    def _get_participants(app) -> list[ParticipantOptions]:
-        participants = app.parser.participants
-        output = []
-        for participant in participants:
-            output.append(
-                ParticipantOptions(
-                    name=participant,
-                    type=app._get_participant_role(participant),
-                    label=app._get_participant_name(participant),
-                    color=app._get_participant_color(participant),
-                )
-            )
-        return output
 
-
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Utterance:
     number: int
     speaker: str
     words: int
+    text: str = ""
+    start_time: str | None = None
+    end_time: str | None = None
 
     def __lt__(self, other):
         return self.number < other.number

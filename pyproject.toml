@@ -3,9 +3,12 @@ requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-exclude = [
-    "assets*"
+include = [
+    "conversationalspacemapapp*"
 ]
+
+[tool.setuptools.package-data]
+"conversationalspacemapapp.App" = ["assets/*.png"]
 
 [project]
 name = "ConversationalSpaceMapApp"
@@ -13,7 +16,7 @@ version = "0.1.2" # RELEASE
 dependencies = [  # RELEASE
   "matplotlib>=3.9,<4",
   "toga>=0.5.4,<0.6",
-  "mockito",
+  "PyGObject>=3.50,<3.52; sys_platform == 'linux'",
 ]
 requires-python = ">= 3.12"
 authors = [
@@ -24,7 +27,8 @@ maintainers = [
 ]
 description = "Generate conversational space maps for interview data."
 readme = "README.rst"
-license = {text = "BSD-3-Clause License"}
+license = "MIT"
+license-files = ["LICENSE"]
 classifiers = [
   # How mature is this project? Common values are
   #   3 - Alpha
@@ -51,7 +55,8 @@ project_name = "ConversationalSpaceMapApp"
 bundle = "ch.manuelbieri"
 version = "0.1.2" # RELEASE
 url = "https://manuelbieri.ch/ConversationalSpaceMapApp/"
-license.file = "LICENSE"
+license = "MIT"
+license-files = ["LICENSE"]
 author = "Manuel Bieri"
 author_email = "mail@manuelbieri.ch"
 
@@ -70,10 +75,7 @@ test_sources = [
 ]
 
 requires = [
-   "matplotlib>=3.9,<4",
-]
-test_requires = [
-    "mockito",
+   "toga-chart",
 ]
 
 [tool.briefcase.app.conversationalspacemapapp.macOS]
@@ -86,6 +88,7 @@ requires = [
 [tool.briefcase.app.conversationalspacemapapp.linux]
 requires = [
     "toga-gtk~=0.5.4",
+    "PyGObject>=3.50,<3.52",
 ]
 
 [tool.briefcase.app.conversationalspacemapapp.linux.system.debian]
@@ -104,7 +107,7 @@ system_runtime_requires = [
     "libcanberra-gtk3-module",
     # Needed to provide WebKit2 at runtime
     # Note: Debian 11 and Ubuntu 20.04 require gir1.2-webkit2-4.0 instead
-    # "gir1.2-webkit2-4.1",
+    "gir1.2-webkit2-4.1",
 ]
 
 [tool.briefcase.app.conversationalspacemapapp.linux.system.rhel]
@@ -123,7 +126,7 @@ system_runtime_requires = [
     # Dependencies that GTK looks for at runtime
     "libcanberra-gtk3",
     # Needed to provide WebKit2 at runtime
-    # "webkit2gtk3",
+    "webkit2gtk4.1",
 ]
 
 [tool.briefcase.app.conversationalspacemapapp.linux.system.suse]
@@ -142,7 +145,7 @@ system_runtime_requires = [
     # Dependencies that GTK looks for at runtime
     "libcanberra-gtk3-module",
     # Needed to provide WebKit2 at runtime
-    # "libwebkit2gtk3", "typelib(WebKit2)",
+    "libwebkit2gtk3", "typelib(WebKit2)",
 ]
 
 [tool.briefcase.app.conversationalspacemapapp.linux.system.arch]
@@ -158,7 +161,7 @@ system_requires = [
     # Dependencies that GTK looks for at runtime
     "libcanberra",
     # Needed to provide WebKit2
-    # "webkit2gtk",
+    "webkit2gtk-4.1",
 ]
 
 system_runtime_requires = [
@@ -169,7 +172,7 @@ system_runtime_requires = [
     # Dependencies that GTK looks for at runtime
     "libcanberra",
     # Needed to provide WebKit2 at runtime
-    # "webkit2gtk",
+    "webkit2gtk-4.1",
 ]
 
 [tool.briefcase.app.conversationalspacemapapp.linux.appimage]
