@@ -12,11 +12,11 @@ include = [
 
 [project]
 name = "ConversationalSpaceMapApp"
-version = "0.2.0" # RELEASE
+version = "0.2.1" # RELEASE
 dependencies = [  # RELEASE
   "matplotlib>=3.9,<4",
   "toga==0.5.6",
-  "PyGObject==3.55.1; sys_platform == 'linux'",
+  "PyGObject>3.55.1; sys_platform == 'linux'",
 ]
 requires-python = ">=3.12"
 authors = [
@@ -52,7 +52,7 @@ Repository = "https://github.com/manuelbieri/ConversationalSpaceMapApp.git"
 [tool.briefcase]
 project_name = "ConversationalSpaceMapApp"
 bundle = "ch.manuelbieri"
-version = "0.2.0" # RELEASE
+version = "0.2.1" # RELEASE
 url = "https://manuelbieri.ch/ConversationalSpaceMapApp/"
 license = "MIT"
 license-files = ["LICENSE"]
