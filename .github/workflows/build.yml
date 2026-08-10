@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [ "Windows", "macOS", "Ubuntu-24.04", "Fedora-40"]
+        target: [ "Windows", "macOS", "Ubuntu-24.04", "Fedora-41"]
         include:
           - target: "Windows"
             output-format: "app"
@@ -50,13 +50,13 @@ jobs:
             briefcase-run-prefix: "xvfb-run"
             briefcase-args: "--target ubuntu:24.04-arm"
 
-          - target: "Fedora-40"
+          - target: "Fedora-41"
             platform: "Linux"
             output-format: "system"
             runs-on: "ubuntu-latest"
             pre-command: "sudo apt -y install socat"
             briefcase-run-prefix: "xvfb-run"
-            briefcase-args: "--target fedora:40"
+            briefcase-args: "--target fedora:41"
 
     steps:
       - name: Checkout
@@ -70,7 +70,7 @@ jobs:
       - name: Install Briefcase
         run: |
           python -m pip install -U pip setuptools wheel
-          python -m pip install briefcase -U
+          python -m pip install "briefcase==0.4.4"
 
       - name: Build App
         run: |
