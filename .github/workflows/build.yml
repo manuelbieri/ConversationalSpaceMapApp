@@ -24,48 +24,36 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [ "Windows", "macOS", "Ubuntu-24.04", "Fedora-41"]
+        target: [ "Windows", "Windows-ARM", "macOS", "Flatpak"]
         include:
           - target: "Windows"
             output-format: "app"
             runs-on: "windows-latest"
 
+          - target: "Windows-ARM"
+            platform: "Windows"
+            output-format: "app"
+            runs-on: "windows-11-arm"
+
           - target: "macOS"
             output-format: "app"
             runs-on: "macos-latest"
 
-          - target: "Ubuntu-24.04"
+          - target: "Flatpak"
             platform: "Linux"
-            output-format: "system"
+            output-format: "Flatpak"
             runs-on: "ubuntu-latest"
-            pre-command: "sudo apt -y install socat"
+            pre-command: "sudo apt update && sudo apt -y install flatpak flatpak-builder"
             briefcase-run-prefix: "xvfb-run"
-            briefcase-args: "--target ubuntu:24.04"
-
-          - target: "Ubuntu-24.04-ARM"
-            platform: "Linux"
-            output-format: "system"
-            runs-on: "ubuntu-24.04-arm"
-            pre-command: "sudo apt -y install socat"
-            briefcase-run-prefix: "xvfb-run"
-            briefcase-args: "--target ubuntu:24.04-arm"
-
-          - target: "Fedora-41"
-            platform: "Linux"
-            output-format: "system"
-            runs-on: "ubuntu-latest"
-            pre-command: "sudo apt -y install socat"
-            briefcase-run-prefix: "xvfb-run"
-            briefcase-args: "--target fedora:41"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.12"  # update with your targeted Python version
+          python-version: "3.14"  # update with your targeted Python version
 
       - name: Install Briefcase
         run: |
