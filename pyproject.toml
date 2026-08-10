@@ -83,7 +83,7 @@ requires = [
 [tool.briefcase.app.conversationalspacemapapp.linux]
 requires = [
     "toga-gtk==0.5.6",
-    "PyGObject==3.55.1",
+    "PyGObject>3.55.1",
 ]
 
 [tool.briefcase.app.conversationalspacemapapp.linux.system.debian]
